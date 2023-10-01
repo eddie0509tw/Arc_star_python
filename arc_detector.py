@@ -12,9 +12,8 @@ class ArcDetector:
         
         self.threshold = threshold
         self.border_lim = 4
-
-        self.sae = np.zeros(2,self.img.shape[1], self.img.shape[0])
-        self.sae_lastest = np.zeros(2,self.img.shape[1], self.img.shape[0])
+        self.sae = np.zeros((2,self.img.shape[1], self.img.shape[0]))
+        self.sae_lastest = np.zeros((2,self.img.shape[1], self.img.shape[0]))
         self.small_circle = np.array([
                                     [0, 3], [1, 3], [2, 2], [3, 1],
                                     [3, 0], [3, -1], [2, -2], [1, -3],
@@ -46,8 +45,8 @@ class ArcDetector:
             return False
 
         # Return if too close to the border
-        if(ex < self.border_lim or ex >= (self.img.shape[0] - self.border_lim) or 
-           ey < self.border_lim or ey > (self.img.shape[1] - self.border_lim)):
+        if(ex < self.border_lim or ex >= (self.img.shape[1] - self.border_lim) or 
+           ey < self.border_lim or ey >= (self.img.shape[0] - self.border_lim)):
             return False
 
         arc_right_idx = np.argmax(self.sae[pol,ex + self.small_circle[:,0],ey + self.small_circle[:,1]])
