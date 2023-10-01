@@ -2,7 +2,9 @@ import numpy as np
 import os
 import arc_detector
 import cv2 as cv
-def load_event_file(file_path, n_event=300000, expected_num_event=300000):
+import matplotlib.pyplot as plt
+
+def load_event_file(file_path, n_event=600000, expected_num_event=600000):
     event_vec = []
 
     try:
@@ -31,7 +33,7 @@ def load_event_file(file_path, n_event=300000, expected_num_event=300000):
         print("Error opening file")
         return None
 
-    event_vec = np.array(event_vec[:i_event],dtype=np.int32)  # Trim the list to the actual number of events
+    event_vec = np.array(event_vec[:i_event],dtype=np.float64)  # Trim the list to the actual number of events
     return event_vec
 
 def load_img_file(dir_name,file_path, n_img=500):
@@ -61,6 +63,26 @@ def load_img_file(dir_name,file_path, n_img=500):
         return None
     return time_stamp_vec[:i_img],img_vec[:i_img]
 
+def plot_event_on_img(event_in_range,img,time_stamp, save_dir="./plot/"):
+    # Create a Matplotlib figure and axis
+    fig, ax = plt.subplots()
+
+    # Display the image
+    ax.imshow(img)
+
+    # Plot the points as blue dots
+    ax.plot(event_in_range[:, 1], event_in_range[:, 2], 'bo')  # Blue dots
+
+
+    # Specify the filename and extension (e.g., .png, .jpg, .pdf)
+    file_name = 'time_{}.png'.format(time_stamp)
+
+    # Combine the directory path and filename
+    file_path = os.path.join(save_dir, file_name)
+
+    # Show the plot
+    plt.savefig(file_path)
+
 if __name__ == '__main__':
     __file__ = './shapes_rotation/'
     event_file_path = os.path.join(os.path.dirname(__file__), 'events.txt')
@@ -68,21 +90,28 @@ if __name__ == '__main__':
 
 
     time_stamp_vec,img_vec = load_img_file(__file__,img_txtfile_path)
-    print(time_stamp_vec[0])
-    print(img_vec[0].shape)
+    # print(time_stamp_vec[0])
+    # print(img_vec[0].shape)
 
     event_vec = load_event_file(event_file_path)
-    print(event_vec)
-    print(event_vec.shape)
+    # print(event_vec)
+    # print(event_vec.shape)
     detector = arc_detector.ArcDetector(img_vec[0])
     corner_index = []
     for i in range(len(event_vec)):
         corner_index.append(detector.detect_corner(event_vec[i,:]))
     corner_index = np.array(corner_index,dtype=np.bool_)
-    print(corner_index)
-    print(corner_index.shape)
+    # print(corner_index)
+    # print(corner_index.shape)
 
     corners = event_vec[corner_index,:]
-    print(corners)
-    print(corners.shape)
+    img = img_vec[60]
+    time = float(time_stamp_vec[60])
+    center = time
+    points_in_range = corners[(corners[:,0] > center - 0.01) & (corners[:,0] < center + 0.01)]
+    # print(corners)
+    # print(corners.shape)
+    print(time)
+    print(points_in_range.shape)
+    plot_event_on_img(points_in_range,img,time)
 

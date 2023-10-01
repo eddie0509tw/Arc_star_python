@@ -29,7 +29,7 @@ class ArcDetector:
                                 ])
     #event: t, x, y, pol
     def detect_corner(self,event):
-        et, ex, ey,pol = event[0],event[1], event[2],event[3]
+        et, ex, ey,pol = event[0],int(event[1]), int(event[2]),int(event[3])
         pol_inv = 1 - pol
         t_last = self.sae_lastest[pol,ex,ey]
         t_last_inv = self.sae_lastest[pol_inv,ex,ey]

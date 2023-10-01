@@ -1,8 +1,8 @@
 /shapes_rotation
-*.png
 *.txt
 test.py
 .DS_Store
 __pycache__
+./*.png
 *.zip
 ```
