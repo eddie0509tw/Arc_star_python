@@ -4,7 +4,7 @@ import arc_detector
 import cv2 as cv
 import matplotlib.pyplot as plt
 
-def load_event_file(file_path, n_event=600000, expected_num_event=600000):
+def load_event_file(file_path, n_event=1000000, expected_num_event=1000000):
     event_vec = []
 
     try:
@@ -100,18 +100,22 @@ if __name__ == '__main__':
     corner_index = []
     for i in range(len(event_vec)):
         corner_index.append(detector.detect_corner(event_vec[i,:]))
+        detector.update(event_vec[i,:])
+
     corner_index = np.array(corner_index,dtype=np.bool_)
     # print(corner_index)
     # print(corner_index.shape)
 
     corners = event_vec[corner_index,:]
-    img = img_vec[60]
-    time = float(time_stamp_vec[60])
-    center = time
-    points_in_range = corners[(corners[:,0] > center - 0.01) & (corners[:,0] < center + 0.01)]
+    for i in range(len(img_vec)):
+        img = img_vec[i]
+        time = float(time_stamp_vec[i])
+        center = time
+        points_in_range = corners[np.logical_and((corners[:,0] > (center - 0.003)), (corners[:,0] < (center + 0.003)))]
+        plot_event_on_img(points_in_range,img,time)
+
     # print(corners)
     # print(corners.shape)
     print(time)
     print(points_in_range.shape)
-    plot_event_on_img(points_in_range,img,time)
 
