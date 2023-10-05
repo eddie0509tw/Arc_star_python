@@ -48,7 +48,7 @@ class ArcDetector:
         if(ex < self.border_lim or ex >= (self.img.shape[1] - self.border_lim) or 
            ey < self.border_lim or ey >= (self.img.shape[0] - self.border_lim)):
             return False
-
+        
         arc_right_idx = np.argmax(self.sae[pol,ex + self.small_circle[:,0],ey + self.small_circle[:,1]])
         segment_new_min_t = self.sae[pol,ex + self.small_circle[arc_right_idx,0],ey + self.small_circle[arc_right_idx,1]]
 
@@ -107,9 +107,9 @@ class ArcDetector:
                 if(arc_left_value < arc_left_min_t):
                     arc_left_min_t = arc_left_value
             iter += 1
-        if not (seg_size <= self.max_Sradius or 
-            (seg_size >= (self.Smallcirlce_size - self.max_Sradius)) and
-            (seg_size <= (self.Smallcirlce_size - self.min_Sradius))):
+        if not (((seg_size <= self.max_Sradius) and (seg_size >= self.min_Sradius) )or 
+            (((self.Smallcirlce_size - seg_size) >= self.min_Sradius) and
+            ((self.Smallcirlce_size - seg_size) <= self.max_Sradius) )):
             return False
         
         # Expand large circle
@@ -173,9 +173,13 @@ class ArcDetector:
                     arc_left_min_t = arc_left_value
             iter += 1
 
-        if not (seg_size <= self.max_Lradius or 
-            (seg_size >= (self.Largecirlce_size - self.max_Lradius)) and
-            (seg_size <= (self.Largecirlce_size - self.min_Lradius))):
+        if not (((seg_size <= self.max_Lradius) and (seg_size >= self.min_Lradius) )or 
+            (((self.Largecirlce_size - seg_size) >= self.min_Lradius) and
+            ((self.Largecirlce_size - seg_size) <= self.max_Lradius) )):
             return False
         
         return True
+    
+    def update(self,event):
+        et, ex, ey,pol = event[0],int(event[1]), int(event[2]),int(event[3])
+        self.sae_lastest[pol,ex,ey] = et
