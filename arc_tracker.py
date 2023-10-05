@@ -16,6 +16,7 @@ class Tree:
     def __init__(self,id,root):
         self.id = id
         self.max_depth = 0
+        self.last_t = root.event[0]
         self.root = root
 
     def add_child(self, child,p):
@@ -23,21 +24,25 @@ class Tree:
         child.depth = p.depth + 1
         if child.depth > self.max_depth:
             self.max_depth = child.depth
+        if self.last_t < child.event[0]:
+            self.last_t = child.event[0]
         child.treeid = self.id
         p.children.append(child)
         return
     
 class EventTracker:
-    def __init__(self, dconn=5, delta_t_max=0.1, rho_thresh=5):
+    def __init__(self, dconn=5, delta_t_max=0.1, rho_thresh=5, time_thresh = 0.5):
         self.dconn = dconn
         self.delta_t_max = delta_t_max
         self.rho_thresh = rho_thresh
+        self.time_thresh = time_thresh
         self.treenum = 0
         self.graph = {}  # Initialize the graph as an empty dictionary
         self.vneigh = []
 
     def add_corner_event(self,event):
         v = Vertex(event)
+        self.del_tree(v)
         # Find neighboring vertices within dconn pixels and delta_t_max time difference
         self.vneigh = []
         self.find_neighboring_vertices(v)
@@ -155,9 +160,26 @@ class EventTracker:
         else:
             return
 
+    def del_tree(self, new_vertex):
+        # delete the tree if the last event is older than time_thresh
+        new_t = new_vertex.event[0]
+        del_list = []
+        for key,tree in self.graph.items():
+            if abs(tree.last_t - new_t) > self.time_thresh:
+                del_list.append(key)
+                continue
+        for key in del_list:
+            del self.graph[key]
+        return
+            
+    # def post_process_tree(self):
+    #     # select the active branch with the highest depth
+    #     self.del_tree()
+    #     for key,tree in self.graph.items():
 
+    #     pass
 
-
+            
 # Example usage:
 if __name__ == '__main__':
     tracker = EventTracker()
@@ -170,5 +192,6 @@ if __name__ == '__main__':
     tracker.add_corner_event(event2)
     tracker.add_corner_event(event3)
     tracker.add_corner_event(event4)
-    print(tracker.graph)
+    for key,tree in tracker.graph.items():
+     print(tree.max_depth)
 
