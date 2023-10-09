@@ -11,4 +11,4 @@ Clone the repository and compile the project:
     $ git clone https://github.com/ialzugaray/arc_star_ros.git
     $ python read_event.py 
 
-We provide a minimal example to process events from a plain text file. You can use the event text files from the the [Event Camera Dataset](http://rpg.ifi.uzh.ch/davis_data.html)
+You can use the event text files from the the [Event Camera Dataset](http://rpg.ifi.uzh.ch/davis_data.html)
