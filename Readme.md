@@ -8,7 +8,7 @@ The code of detector is mainly reference and reimplement from this [github](http
 # How to use the code
 Clone the repository and compile the project:
 
-    $ git clone https://github.com/ialzugaray/arc_star_ros.git
+    $ git clone https://github.com/eddie0509tw/Arc_star_python.git
     $ python read_event.py 
 
 You can use the event text files from the the [Event Camera Dataset](http://rpg.ifi.uzh.ch/davis_data.html)
