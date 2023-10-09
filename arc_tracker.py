@@ -16,6 +16,7 @@ class Tree:
     def __init__(self,id,root):
         self.id = id
         self.max_depth = 0
+        self.max_depth_child = root
         self.last_t = root.event[0]
         self.root = root
 
@@ -24,6 +25,7 @@ class Tree:
         child.depth = p.depth + 1
         if child.depth > self.max_depth:
             self.max_depth = child.depth
+            self.max_depth_child = child
         if self.last_t < child.event[0]:
             self.last_t = child.event[0]
         child.treeid = self.id
@@ -31,7 +33,7 @@ class Tree:
         return
     
 class EventTracker:
-    def __init__(self, dconn=5, delta_t_max=0.1, rho_thresh=5, time_thresh = 0.5):
+    def __init__(self, dconn=5, delta_t_max=0.1, rho_thresh=5, time_thresh = 0.1):
         self.dconn = dconn
         self.delta_t_max = delta_t_max
         self.rho_thresh = rho_thresh
@@ -42,7 +44,7 @@ class EventTracker:
 
     def add_corner_event(self,event):
         v = Vertex(event)
-        self.del_tree(v)
+        self.post_process_tree(v)
         # Find neighboring vertices within dconn pixels and delta_t_max time difference
         self.vneigh = []
         self.find_neighboring_vertices(v)
@@ -50,8 +52,6 @@ class EventTracker:
 
         # Split vertices into leaf and non-leaf nodes
         Vleaf, Vnotleaf = self.split_leaf_and_notleaf_vertices()
-        print(Vleaf)
-        print(Vnotleaf)
 
         if len(Vleaf):
             # Find the closest and newest vertex in Vleaf
@@ -160,24 +160,34 @@ class EventTracker:
         else:
             return
 
-    def del_tree(self, new_vertex):
+    def post_process_tree(self, new_vertex):
         # delete the tree if the last event is older than time_thresh
         new_t = new_vertex.event[0]
         del_list = []
         for key,tree in self.graph.items():
-            if abs(tree.last_t - new_t) > self.time_thresh:
+            if (abs(tree.last_t - new_t) > self.time_thresh) or tree.max_depth_child.is_active == False or (abs(tree.max_depth_child.event[0] - new_t) > self.time_thresh):
                 del_list.append(key)
                 continue
         for key in del_list:
             del self.graph[key]
         return
             
-    # def post_process_tree(self):
-    #     # select the active branch with the highest depth
-    #     self.del_tree()
-    #     for key,tree in self.graph.items():
-
-    #     pass
+    def pick_branch(self):
+        # select the active branch with the highest depth
+        curr_branch = []
+        for key,tree in self.graph.items():
+            curr_leaf = tree.max_depth_child
+            while curr_leaf:
+                if curr_leaf.is_active:
+                    curr_branch.append(curr_leaf.event)
+                else:
+                    break
+                curr_leaf = curr_leaf.parent
+        if len(curr_branch):
+            curr_branch = np.array(curr_branch)
+        else:
+            curr_branch = np.zeros((0,4))
+        return curr_branch
 
             
 # Example usage:
@@ -186,12 +196,31 @@ if __name__ == '__main__':
     event1 = np.array([0.1, 10, 20,1])
     event2 = np.array([0.2, 12, 22,0])
     event3 = np.array([0.3, 8, 18,1])
-    event4 = np.array([0.6, 20, 5,1])
+    event4 = np.array([0.39, 11, 16,0])
+    event5 = np.array([0.6, 20, 5,1])
+    event6 = np.array([0.7, 40, 5,0])
+    event7 = np.array([0.13, 11, 21,1])
+    event8 = np.array([0.14, 13, 23,1])
+    event9 = np.array([0.167, 15, 27,1])
+    event10 = np.array([0.8, 100, 20,0])
+    event11 = np.array([0.9, 120, 10,0])
 
     tracker.add_corner_event(event1)
+    tracker.add_corner_event(event7)
+    tracker.add_corner_event(event8)
+    tracker.add_corner_event(event9)
     tracker.add_corner_event(event2)
     tracker.add_corner_event(event3)
     tracker.add_corner_event(event4)
+    tracker.add_corner_event(event5)
+    tracker.add_corner_event(event6)
+    tracker.add_corner_event(event10)
+    tracker.add_corner_event(event11)
+
     for key,tree in tracker.graph.items():
      print(tree.max_depth)
+    
+    active_branch = tracker.pick_branch()
+    print(active_branch)
+    print(np.zeros((0,4)))
 

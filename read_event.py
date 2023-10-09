@@ -1,10 +1,13 @@
 import numpy as np
 import os
 import arc_detector
+import arc_tracker
 import cv2 as cv
 import matplotlib.pyplot as plt
+import argparse
+import pdb
 
-def load_event_file(file_path, n_event=1000000, expected_num_event=1000000):
+def load_event_file(file_path, n_event=2000000, expected_num_event=2000000):
     event_vec = []
 
     try:
@@ -63,7 +66,7 @@ def load_img_file(dir_name,file_path, n_img=500):
         return None
     return time_stamp_vec[:i_img],img_vec[:i_img]
 
-def plot_event_on_img(event_in_range,img,time_stamp, save_dir="./plot/"):
+def plot_event_on_img(event_in_range,curr_corner,img,time_stamp, save_dir="./plot/", track_mode = True):
     # Create a Matplotlib figure and axis
     fig, ax = plt.subplots()
 
@@ -71,7 +74,9 @@ def plot_event_on_img(event_in_range,img,time_stamp, save_dir="./plot/"):
     ax.imshow(img)
 
     # Plot the points as blue dots
-    ax.plot(event_in_range[:, 1], event_in_range[:, 2], 'bo')  # Blue dots
+    if track_mode:
+        ax.plot(event_in_range[:, 1], event_in_range[:, 2], 'bo',markersize = 2)  # Blue dots for past trail
+    ax.plot(curr_corner[:,1], curr_corner[:,2], 'ro',markersize = 2)  # Red dots
 
 
     # Specify the filename and extension (e.g., .png, .jpg, .pdf)
@@ -80,16 +85,32 @@ def plot_event_on_img(event_in_range,img,time_stamp, save_dir="./plot/"):
     # Combine the directory path and filename
     file_path = os.path.join(save_dir, file_name)
 
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
     # Show the plot
     plt.savefig(file_path)
+    plt.close()
 
 if __name__ == '__main__':
-    __file__ = './shapes_rotation/'
+    # Create an ArgumentParser object
+    parser = argparse.ArgumentParser(description='Description of your script.')
+
+    # Add command-line arguments
+    parser.add_argument('--mode', '-m',default=True ,type=bool, help='which mode to run, track or not')
+    parser.add_argument('--input', '-i',default= './shapes_rotation/', type=str, help='Input file path')
+    #parser.add_argument('--output', '-o', type=str, help='Output file path')
+    #parser.add_argument('--verbose', '-v', action='store_true', help='Enable verbose mode')
+
+    # Parse the command-line arguments
+    args = parser.parse_args()
+
+    __file__ = args.input
     event_file_path = os.path.join(os.path.dirname(__file__), 'events.txt')
     img_txtfile_path = os.path.join(os.path.dirname(__file__), 'images.txt')
+    track_mode = args.mode
 
 
     time_stamp_vec,img_vec = load_img_file(__file__,img_txtfile_path)
+
     # print(time_stamp_vec[0])
     # print(img_vec[0].shape)
 
@@ -105,17 +126,27 @@ if __name__ == '__main__':
     corner_index = np.array(corner_index,dtype=np.bool_)
     # print(corner_index)
     # print(corner_index.shape)
-
+    tracker = arc_tracker.EventTracker()
     corners = event_vec[corner_index,:]
+    last_t = corners[-1,0]
+    active_branch = None
     for i in range(len(img_vec)):
         img = img_vec[i]
         time = float(time_stamp_vec[i])
+        if time > last_t:
+            break
         center = time
-        points_in_range = corners[np.logical_and((corners[:,0] > (center - 0.003)), (corners[:,0] < (center + 0.003)))]
-        plot_event_on_img(points_in_range,img,time)
+        points_in_range = corners[np.logical_and((corners[:,0] >= (center - 0.003)), (corners[:,0] < (center + 0.003)))]
+        if track_mode:
+            for j in range(points_in_range.shape[0]):
+                tracker.add_corner_event(points_in_range[j,:])
+            active_branch = tracker.pick_branch()
+        # if i % 20000 == 0:
+        #     pdb.set_trace()
+        plot_event_on_img(active_branch,points_in_range,img,time,save_dir="./plot/",track_mode = track_mode)
 
     # print(corners)
     # print(corners.shape)
-    print(time)
-    print(points_in_range.shape)
+    # print(time)
+    # print(points_in_range.shape)
 
