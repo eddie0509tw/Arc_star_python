@@ -165,7 +165,7 @@ class EventTracker:
         new_t = new_vertex.event[0]
         del_list = []
         for key,tree in self.graph.items():
-            if (abs(tree.last_t - new_t) > self.time_thresh) or tree.max_depth_child.is_active == False or (abs(tree.max_depth_child.event[0] - new_t) > self.time_thresh):
+            if (abs(tree.last_t - new_t) > self.time_thresh):
                 del_list.append(key)
                 continue
         for key in del_list:
