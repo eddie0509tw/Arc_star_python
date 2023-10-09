@@ -92,45 +92,45 @@ def plot_event_on_img(event_in_range,curr_corner,img,time_stamp, save_dir="./tem
     plt.close()
 
 if __name__ == '__main__':
-    # Create an ArgumentParser object
+    
     parser = argparse.ArgumentParser(description='Description of your script.')
-
-    # Add command-line arguments
     parser.add_argument('--mode', '-m',default=True ,type=bool, help='which mode to run, track or not')
     parser.add_argument('--input', '-i',default= './shapes_rotation/', type=str, help='Input file path')
-    #parser.add_argument('--output', '-o', type=str, help='Output file path')
-    #parser.add_argument('--verbose', '-v', action='store_true', help='Enable verbose mode')
 
-    # Parse the command-line arguments
     args = parser.parse_args()
 
     __file__ = args.input
-    event_file_path = os.path.join(os.path.dirname(__file__), 'events.txt')
-    img_txtfile_path = os.path.join(os.path.dirname(__file__), 'images.txt')
-    track_mode = args.mode
 
+    event_file_path = os.path.join(os.path.dirname(__file__), 'events.txt')
+
+    img_txtfile_path = os.path.join(os.path.dirname(__file__), 'images.txt')
+
+    track_mode = args.mode
 
     time_stamp_vec,img_vec = load_img_file(__file__,img_txtfile_path)
 
-    # print(time_stamp_vec[0])
-    # print(img_vec[0].shape)
-
     event_vec = load_event_file(event_file_path)
-    # print(event_vec)
-    # print(event_vec.shape)
+
     detector = ArcDetector(img_vec[0])
+
     corner_index = []
+    # read events
     for i in range(len(event_vec)):
+
         corner_index.append(detector.detect_corner(event_vec[i,:]))
+
         detector.update(event_vec[i,:])
 
     corner_index = np.array(corner_index,dtype=np.bool_)
-    # print(corner_index)
-    # print(corner_index.shape)
+
     tracker = EventTracker()
+
     corners = event_vec[corner_index,:]
+
     last_t = corners[-1,0]
+
     active_branch = None
+
     for i in range(len(img_vec)):
         img = img_vec[i]
         time = float(time_stamp_vec[i])
@@ -147,8 +147,5 @@ if __name__ == '__main__':
         plot_event_on_img(active_branch,points_in_range,img,time,track_mode = track_mode)
 
     sort_directory("./temp/","./track_plot/")
-    # print(corners)
-    # print(corners.shape)
-    # print(time)
-    # print(points_in_range.shape)
+
 
