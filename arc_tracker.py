@@ -33,7 +33,7 @@ class Tree:
         return
     
 class EventTracker:
-    def __init__(self, dconn=5, delta_t_max=0.1, rho_thresh=5, time_thresh = 0.1):
+    def __init__(self, dconn=5, delta_t_max=0.1, rho_thresh=5, time_thresh = 0.2):
         self.dconn = dconn
         self.delta_t_max = delta_t_max
         self.rho_thresh = rho_thresh

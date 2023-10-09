@@ -17,7 +17,6 @@ def sort_directory(original_plot_path,path_to_plot):
     sorted_images = sorted(files,key=get_file_time)
 
     for i in range(len(sorted_images)):
-        print(sorted_images[i])
         new_file_name = "{:0>6d}.png".format(i)
         shutil.move(os.path.join(original_plot_path,sorted_images[i]),os.path.join(path_to_plot,new_file_name))
     

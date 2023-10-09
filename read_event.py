@@ -137,7 +137,7 @@ if __name__ == '__main__':
         if time > last_t:
             break
         center = time
-        points_in_range = corners[np.logical_and((corners[:,0] >= (center - 0.003)), (corners[:,0] < (center + 0.003)))]
+        points_in_range = corners[np.logical_and((corners[:,0] >= (center - 0.004)), (corners[:,0] < (center + 0.004)))]
         if track_mode:
             for j in range(points_in_range.shape[0]):
                 tracker.add_corner_event(points_in_range[j,:])
