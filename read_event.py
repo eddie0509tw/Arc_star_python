@@ -2,7 +2,7 @@ import numpy as np
 import os
 from arc_detector import ArcDetector
 from arc_tracker import EventTracker
-from sort_image import sort_directory
+from utils import sort_directory
 import cv2 as cv
 import matplotlib.pyplot as plt
 import argparse
