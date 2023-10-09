@@ -12,7 +12,7 @@ class Vertex:
         self.is_active = False
     
 
-class Tree:
+class EventTree:
     def __init__(self,id,root):
         self.id = id
         self.max_depth = 0
@@ -61,7 +61,7 @@ class EventTracker:
             vparent = self.find_closest_and_newest_vertex(Vnotleaf,v)
         else:
             # No active vertices in the neighborhood, create a new tree
-            tree = Tree(self.treenum,v)
+            tree = EventTree(self.treenum,v)
             v.treeid = self.treenum
             self.treenum += 1
             self.graph[tree.id] = tree

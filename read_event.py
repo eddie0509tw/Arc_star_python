@@ -68,31 +68,24 @@ def load_img_file(dir_name,file_path, n_img=500):
     return time_stamp_vec[:i_img],img_vec[:i_img]
 
 def plot_event_on_img(event_in_range,curr_corner,img,time_stamp, save_dir="./temp/", track_mode = True):
-    # Create a Matplotlib figure and axis
     fig, ax = plt.subplots()
 
-    # Display the image
     ax.imshow(img)
 
-    # Plot the points as blue dots
     if track_mode:
         ax.plot(event_in_range[:, 1], event_in_range[:, 2], 'bo',markersize = 2)  # Blue dots for past trail
     ax.plot(curr_corner[:,1], curr_corner[:,2], 'ro',markersize = 2)  # Red dots
 
-
-    # Specify the filename and extension (e.g., .png, .jpg, .pdf)
     file_name = 'time_{}.png'.format(time_stamp)
 
-    # Combine the directory path and filename
     file_path = os.path.join(save_dir, file_name)
 
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
-    # Show the plot
     plt.savefig(file_path)
     plt.close()
 
 if __name__ == '__main__':
-    
+
     parser = argparse.ArgumentParser(description='Description of your script.')
     parser.add_argument('--mode', '-m',default=True ,type=bool, help='which mode to run, track or not')
     parser.add_argument('--input', '-i',default= './shapes_rotation/', type=str, help='Input file path')
