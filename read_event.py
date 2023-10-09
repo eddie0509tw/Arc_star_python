@@ -1,7 +1,8 @@
 import numpy as np
 import os
-import arc_detector
-import arc_tracker
+from arc_detector import ArcDetector
+from arc_tracker import EventTracker
+from sort_image import sort_directory
 import cv2 as cv
 import matplotlib.pyplot as plt
 import argparse
@@ -66,7 +67,7 @@ def load_img_file(dir_name,file_path, n_img=500):
         return None
     return time_stamp_vec[:i_img],img_vec[:i_img]
 
-def plot_event_on_img(event_in_range,curr_corner,img,time_stamp, save_dir="./track_plot/", track_mode = True):
+def plot_event_on_img(event_in_range,curr_corner,img,time_stamp, save_dir="./temp/", track_mode = True):
     # Create a Matplotlib figure and axis
     fig, ax = plt.subplots()
 
@@ -117,7 +118,7 @@ if __name__ == '__main__':
     event_vec = load_event_file(event_file_path)
     # print(event_vec)
     # print(event_vec.shape)
-    detector = arc_detector.ArcDetector(img_vec[0])
+    detector = ArcDetector(img_vec[0])
     corner_index = []
     for i in range(len(event_vec)):
         corner_index.append(detector.detect_corner(event_vec[i,:]))
@@ -126,7 +127,7 @@ if __name__ == '__main__':
     corner_index = np.array(corner_index,dtype=np.bool_)
     # print(corner_index)
     # print(corner_index.shape)
-    tracker = arc_tracker.EventTracker()
+    tracker = EventTracker()
     corners = event_vec[corner_index,:]
     last_t = corners[-1,0]
     active_branch = None
@@ -145,6 +146,7 @@ if __name__ == '__main__':
         #     pdb.set_trace()
         plot_event_on_img(active_branch,points_in_range,img,time,track_mode = track_mode)
 
+    sort_directory("./temp/","./track_plot/")
     # print(corners)
     # print(corners.shape)
     # print(time)

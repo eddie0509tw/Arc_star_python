@@ -3,4 +3,4 @@ This code is a reimplementation of the Arc* algorithm described in the paper  "*
 
 
 # Reference:
-The code of detector is mainly reference and reimplement from this [github](https://github.com/ialzugaray/arc_star_ros), but in a python fashion. The implementation includes Arc detector and Arc tracker and it does not require the usage of ROS. The plot is from matplotlob package directly drawing events on the image frames. 
+The code of detector is mainly reference and reimplement from this [github](https://github.com/ialzugaray/arc_star_ros), but in a python fashion. The implementation includes Arc detector and Arc tracker and it does not require the usage of ROS. The plot is from matplotlib package directly drawing events on the image frames. 
