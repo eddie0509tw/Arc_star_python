@@ -33,22 +33,24 @@ class EventTree:
         return
     
 class EventTracker:
-    def __init__(self, dconn=5, delta_t_max=0.1, rho_thresh=5, time_thresh = 0.2):
+    def __init__(self, dconn=5, delta_t_max=0.1, rho_thresh=10, time_thresh = 0.5):
         self.dconn = dconn
         self.delta_t_max = delta_t_max
         self.rho_thresh = rho_thresh
         self.time_thresh = time_thresh
+        self.newest_t = 0
         self.treenum = 0
         self.graph = {}  # Initialize the graph as an empty dictionary
         self.vneigh = []
 
     def add_corner_event(self,event):
         v = Vertex(event)
-        self.post_process_tree(v)
+        if v.event[0] > self.newest_t:
+            self.newest_t = v.event[0]
+        #self.post_process_tree(v)
         # Find neighboring vertices within dconn pixels and delta_t_max time difference
         self.vneigh = []
         self.find_neighboring_vertices(v)
-        self.deactivate_vertices()
 
         # Split vertices into leaf and non-leaf nodes
         Vleaf, Vnotleaf = self.split_leaf_and_notleaf_vertices()
@@ -84,8 +86,8 @@ class EventTracker:
     def is_valid_neighboor(self,vertex,new_vertex):
         tt, xx, yy = vertex.event[0], vertex.event[1], vertex.event[2]
         t, x, y = new_vertex.event[0], new_vertex.event[1], new_vertex.event[2]
-        if (abs(x - xx) <= self.dconn and 
-            abs(y - yy) <= self.dconn and 
+        dist = np.sqrt((x - xx) ** 2 + (y - yy) ** 2)
+        if (dist <= self.dconn) and (
             abs(t - tt) <= self.delta_t_max):
             return True
         return False
@@ -142,51 +144,75 @@ class EventTracker:
         parent_tree.add_child(new_vertex,vparent)
         return
     
-    def deactivate_vertices(self):
-        for vertex in self.vneigh:
-            self.traverse_and_deactivate(vertex)
+    def deactivation(self):
+        for key,curr_tree in self.graph.items():
+
+            node = curr_tree.max_depth_child
+
+            while node and node.is_active:
+                if node.depth < (curr_tree.max_depth - self.rho_thresh):
+
+                    node.deactivate()
+
+                node = node.parent
+
         return
     
-    def traverse_and_deactivate(self,root):
-        # deactivate all the children of vertex in neighborhood if their depth exceed the rho_thresh
-        if(len(root.children)):
-            for child in root.children:
-                self.traverse_and_deactivate(child)
-                if child.is_active:
-                    curr_tree = self.graph[child.treeid]
-                    if child.depth < (curr_tree.max_depth - self.rho_thresh):
-                        child.deactivate()
-            return
-        else:
-            return
+    # def deactivate_vertices(self):
+    #     for vertex in self.vneigh:
+    #         self.traverse_and_deactivate(vertex)
+    #     return
+    
+    # def traverse_and_deactivate(self,root):
+    #     # deactivate all the children of vertex in neighborhood if their depth exceed the rho_thresh
+    #     if(len(root.children)):
+    #         for child in root.children:
+    #             self.traverse_and_deactivate(child)
+    #             if child.is_active:
+    #                 curr_tree = self.graph[child.treeid]
+    #                 if child.depth < (curr_tree.max_depth - self.rho_thresh):
+    #                     child.deactivate()
+    #         return
+    #     else:
+    #         return
 
-    def post_process_tree(self, new_vertex):
+    def post_process_tree(self):
         # delete the tree if the last event is older than time_thresh
-        new_t = new_vertex.event[0]
+        new_t = self.newest_t
         del_list = []
         for key,tree in self.graph.items():
-            if (abs(tree.last_t - new_t) > self.time_thresh):
+            if (new_t - tree.last_t) > self.time_thresh:
                 del_list.append(key)
-                continue
+    
         for key in del_list:
             del self.graph[key]
         return
             
     def pick_branch(self):
         # select the active branch with the highest depth
+        self.post_process_tree()
+
+        self.deactivation()
+
         curr_branch = []
+
         for key,tree in self.graph.items():
+
             curr_leaf = tree.max_depth_child
+
             while curr_leaf:
+
                 if curr_leaf.is_active:
                     curr_branch.append(curr_leaf.event)
                 else:
                     break
                 curr_leaf = curr_leaf.parent
+
         if len(curr_branch):
             curr_branch = np.array(curr_branch)
         else:
             curr_branch = np.zeros((0,4))
+
         return curr_branch
 
             

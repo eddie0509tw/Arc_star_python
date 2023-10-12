@@ -11,7 +11,8 @@ def get_file_time(file_name):
 
 
 def sort_directory(original_plot_path,path_to_plot):
-    shutil.rmtree(path_to_plot)
+    if os.path.exists(path_to_plot):
+        shutil.rmtree(path_to_plot)
     os.makedirs(path_to_plot,exist_ok=True)
     files = os.listdir(original_plot_path)
     sorted_images = sorted(files,key=get_file_time)
